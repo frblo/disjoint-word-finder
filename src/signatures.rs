@@ -124,7 +124,6 @@ pub fn find_longest_chain(disjoint_signatures: HashMap<Vec<char>, Vec<Vec<char>>
         Box::leak(Box::new(disjoint_signatures));
 
     for (sig, disjoint_sigs) in static_box.iter() {
-        println!("{:?}", sig);
         let tx_copy = tx.clone();
         thread::spawn(move || {
             let mut chain = chain_builder(sig.clone(), disjoint_sigs);
@@ -141,7 +140,6 @@ pub fn find_longest_chain(disjoint_signatures: HashMap<Vec<char>, Vec<Vec<char>>
             longest_chain = received;
         }
     }
-    println!("whaqaa");
 
     return longest_chain;
 }
@@ -210,7 +208,6 @@ mod tests {
         ];
 
         let res = chain_builder(sig, &disjoint_signatures_list);
-        println!("res: {:?}", res);
         assert!(res.len() == 3);
     }
 }
