@@ -1,5 +1,9 @@
 use std::{collections::HashMap, sync::mpsc, thread};
 
+/// Creates a "signature" based on a word, which is a sorted vec of unique
+/// characters in a string. For example "modem" has the signature
+/// \['d', 'e', 'm', 'o'\]. This function will treat uppercase and lowercase
+/// as different letters.
 pub fn signature(word: &String) -> Vec<char> {
     let mut word_signature: Vec<char> = vec![word.chars().nth(0).unwrap()];
     for c in word.chars() {

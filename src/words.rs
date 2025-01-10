@@ -20,3 +20,19 @@ pub fn collect_words(path: String) -> HashMap<Vec<char>, Vec<String>> {
     }
     return signature_map;
 }
+
+pub fn write_words(signatures: Vec<Vec<char>>, signature_map: HashMap<Vec<char>, Vec<String>>) {
+    for (i, sig) in signatures.iter().enumerate() {
+        println!("Level {} words:", i);
+        match signature_map.get(sig) {
+            Some(words) => {
+                for w in words.iter() {
+                    println!("{}", w);
+                }
+            },
+            None => ()
+        };
+        println!();
+    }
+    println!("Longest chain length: {}", signatures.len());
+}
