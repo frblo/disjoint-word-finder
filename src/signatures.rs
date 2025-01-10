@@ -127,19 +127,59 @@ pub fn find_longest_chain(disjoint_signatures: HashMap<Vec<char>, Vec<Vec<char>>
     let static_box: &'static HashMap<Vec<char>, Vec<Vec<char>>> =
         Box::leak(Box::new(disjoint_signatures));
 
-    for (sig, disjoint_sigs) in static_box.iter() {
+    let cpu_count: usize = match thread::available_parallelism() {
+        Ok(x) => {
+            let c = x.get();
+            if c > static_box.len() {
+                static_box.len()
+            } else {
+                c
+            }
+        },
+        Err(_) => 1
+    };
+
+    let mut sig_index = 0;
+    while sig_index < cpu_count {
+        let (sig, disjoint_sigs) = match static_box.iter().nth(sig_index) {
+            Some(x) => x,
+            None => panic!("fuck")
+        };
+
         let tx_copy = tx.clone();
         thread::spawn(move || {
             let mut chain = chain_builder(sig.clone(), disjoint_sigs);
             chain.push(sig.clone());
             tx_copy.send(chain).unwrap();
         });
-    }
 
-    drop(tx);
+        sig_index += 1;
+    }
 
     let mut longest_chain: Vec<Vec<char>> = Vec::new();
     for received in rx {
+        if sig_index < static_box.len() {
+            // Duplicate code, put into function
+            let (sig, disjoint_sigs) = match static_box.iter().nth(sig_index) {
+                Some(x) => x,
+                None => panic!("fuck")
+            };
+
+            let tx_copy = tx.clone();
+            thread::spawn(move || {
+                let mut chain = chain_builder(sig.clone(), disjoint_sigs);
+                chain.push(sig.clone());
+                tx_copy.send(chain).unwrap();
+            });
+
+            sig_index += 1;
+        } else {
+            drop(tx);
+            if received.len() > longest_chain.len() {
+                longest_chain = received;
+            }
+            break;
+        }
         if received.len() > longest_chain.len() {
             longest_chain = received;
         }
