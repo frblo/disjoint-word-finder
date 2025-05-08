@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fs::File, io::{BufRead, BufReader, Lines}};
 use crate::signatures::signature;
 
+const MAX_SIG_LEN: usize = 3;
+
 pub fn collect_words(path: &String) -> HashMap<Vec<char>, Vec<String>> {
     let r = BufReader::new(File::open(path)
         .expect("Failed to open file"));
@@ -9,6 +11,9 @@ pub fn collect_words(path: &String) -> HashMap<Vec<char>, Vec<String>> {
     let mut signature_map: HashMap<Vec<char>, Vec<String>> = HashMap::new();
     for l in lines.map_while(Result::ok) {
         let sig = signature(&l);
+        if sig.len() > MAX_SIG_LEN {
+            continue;
+        }
         match signature_map.get_mut(&sig) {
             Some(wordlist) => {
                 wordlist.push(l);
